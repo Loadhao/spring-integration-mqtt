@@ -10,9 +10,8 @@
  * 作者姓名           修改时间           版本号              描述
  */
 
-package cn.zhhcloud.client.message.mqtt.recv;
+package cn.zhhcloud.client.message.mqtt2.recv;
 
-import org.springframework.integration.dispatcher.UnicastingDispatcher;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
@@ -24,7 +23,7 @@ import org.springframework.messaging.MessagingException;
  * @author LoadHao
  * @date 2019/6/13
  */
-public class ClientMessageHandler<T> implements MessageHandler {
+public class ClientMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(Message<?> message) throws MessagingException {
@@ -33,10 +32,8 @@ public class ClientMessageHandler<T> implements MessageHandler {
 
 
         String topic = message.getHeaders().get("mqtt_receivedTopic").toString();
-        if (topic.contains("hello")) {
-            //具体的客户端业务流程，可以写这儿
-            System.out.println("订阅主题是:" + topic);
-            System.out.println("消息内容是:" + message.getPayload().toString());
-        }
+        //具体的客户端业务流程，可以写这儿
+        System.out.println("订阅主题是:" + topic);
+        System.out.println("消息内容是:" + message.getPayload().toString());
     }
 }
