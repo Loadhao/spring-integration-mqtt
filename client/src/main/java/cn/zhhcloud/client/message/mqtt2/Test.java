@@ -12,10 +12,10 @@
 
 package cn.zhhcloud.client.message.mqtt2;
 
-import cn.zhhcloud.client.message.mqtt2.adapter.MqttPublisherAdapter;
+import cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttPublisherAdapter;
 import cn.zhhcloud.client.message.mqtt2.adapter.MqttSubscriberAdapter;
-import cn.zhhcloud.client.message.mqtt2.connection.MqttClientConnFactory;
 import cn.zhhcloud.client.message.mqtt2.connection.MqttConnOptions;
+import cn.zhhcloud.client.message.mqtt2.publisher.DMSMqttPublisher;
 import cn.zhhcloud.client.message.mqtt2.recv.ClientMessageHandler;
 import lombok.Data;
 import org.springframework.boot.ApplicationArguments;
@@ -24,15 +24,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.integration.dsl.context.IntegrationFlowBeanPostProcessor;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
-import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 功能描述: <br>
@@ -51,8 +48,6 @@ public class Test {
     @Resource
     private MqttPahoClientFactory mqttPahoClientFactory;
 
-    private MqttPublisherAdapter mqttPublisherAdapter;
-
     private MqttPahoMessageDrivenChannelAdapter adapter;
 
     @PostConstruct
@@ -69,11 +64,7 @@ public class Test {
         this.adapter = mqttSubscriberAdapter.getAdapter();
 
         //发布
-        MqttPublisherAdapter mqttPublisherAdapter = new MqttPublisherAdapter();
-        mqttPublisherAdapter.setMqttPahoClientFactory(mqttPahoClientFactory);
-        mqttPublisherAdapter.setServiceId("serviceId");
-        this.mqttPublisherAdapter = mqttPublisherAdapter;
-        integrationFlowBeanPostProcessor.postProcessBeforeInitialization(mqttPublisherAdapter, mqttPublisherAdapter.getClass().getName());
+        DMSMqttPublisher.init(mqttPahoClientFactory, integrationFlowBeanPostProcessor);
 
     }
 
@@ -89,14 +80,11 @@ public class Test {
             adapter.addTopic("topic_test");
 
             //发布消息到主题：topic_test
-            BaseMessage baseMessage = new BaseMessage();
-            baseMessage.setPayload("first blood.");
-            Map<String, Object> headers = new HashMap<>(10);
-            headers.put(MqttHeaders.TOPIC, "topic_test");
-            headers.put(MqttHeaders.QOS, 1);
-            MessageHeaders messageHeaders = new MessageHeaders(headers);
-            baseMessage.setHeaders(messageHeaders);
-            mqttPublisherAdapter.getInputChannel().send(baseMessage, 10);
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setTopic("topic_test");
+            mqttMessage.setPayload("first blood1.");
+            boolean b = DMSMqttPublisher.publishMessage(mqttMessage);
+            System.out.println("发布成功:" + b);
         }
     }
 

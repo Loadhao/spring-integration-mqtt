@@ -22,7 +22,7 @@ import lombok.Data;
  * @date 2019/6/13
  */
 @Data
-public abstract class BaseMessage {
+public abstract class MqttMessage {
     private String payload;
     private String topic;
     private String[] topics;
