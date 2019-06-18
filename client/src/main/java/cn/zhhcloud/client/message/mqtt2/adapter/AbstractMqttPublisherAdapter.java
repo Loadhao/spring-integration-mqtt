@@ -12,8 +12,8 @@
 
 package cn.zhhcloud.client.message.mqtt2.adapter;
 
-import cn.zhhcloud.client.message.mqtt2.MqttMessage;
-import cn.zhhcloud.client.message.mqtt2.channel.interceptor.MqttChannelInterptor;
+import cn.zhhcloud.client.message.mqtt2.message.MqttMessage;
+import cn.zhhcloud.client.message.mqtt2.channel.MqttChannelInterptor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.integration.channel.DirectChannel;
@@ -41,7 +41,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapter {
-    private MqttPahoClientFactory mqttPahoClientFactory;
+    private static MqttPahoClientFactory mqttPahoClientFactory;
     private String clientId;
     private MqttPahoMessageHandler messageHandler;
     private static MessageChannel outputChannel;
@@ -49,31 +49,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
     private boolean defaultRetained;
     private int defaultQos = 1;
 
-    public AbstractMqttPublisherAdapter() {
-    }
-
-    public AbstractMqttPublisherAdapter(MqttPahoClientFactory mqttPahoClientFactory, String clientId) {
-        this.mqttPahoClientFactory = mqttPahoClientFactory;
-        this.clientId = clientId;
-    }
-
-    public AbstractMqttPublisherAdapter(MqttPahoClientFactory mqttPahoClientFactory, String clientId, MqttPahoMessageHandler messageHandler) {
-        this.mqttPahoClientFactory = mqttPahoClientFactory;
-        this.clientId = clientId;
-        this.messageHandler = messageHandler;
-    }
-
-    public AbstractMqttPublisherAdapter(MqttPahoClientFactory mqttPahoClientFactory, String clientId, MessageChannel channel) {
-        this.mqttPahoClientFactory = mqttPahoClientFactory;
-        this.clientId = clientId;
-        outputChannel = channel;
-    }
-
-    public AbstractMqttPublisherAdapter(MqttPahoClientFactory mqttPahoClientFactory, String clientId, MqttPahoMessageHandler messageHandler, MessageChannel channel) {
-        this.mqttPahoClientFactory = mqttPahoClientFactory;
-        this.clientId = clientId;
-        this.messageHandler = messageHandler;
-        outputChannel = channel;
+    protected AbstractMqttPublisherAdapter() {
     }
 
     /**
@@ -104,8 +80,8 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
         return mqttPahoClientFactory;
     }
 
-    public void setMqttPahoClientFactory(MqttPahoClientFactory mqttPahoClientFactory) {
-        this.mqttPahoClientFactory = mqttPahoClientFactory;
+    public static void setMqttPahoClientFactory(MqttPahoClientFactory clientFactory) {
+        mqttPahoClientFactory = clientFactory;
     }
 
     public String getClientId() {
@@ -122,7 +98,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
      *
      * @author LoadHao
      **/
-    public MqttPahoMessageHandler getMessageHandler() {
+    private MqttPahoMessageHandler getMessageHandler() {
         if (messageHandler == null) {
             MqttPahoMessageHandler defaultMessageHandler = new MqttPahoMessageHandler
                     (clientId, mqttPahoClientFactory);
@@ -140,7 +116,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
         this.messageHandler = messageHandler;
     }
 
-    public MessageChannel getOutputChannel() {
+    private MessageChannel getOutputChannel() {
         if (outputChannel == null) {
             DirectChannel defaultChannel = new DirectChannel();
             defaultChannel.addInterceptor(new MqttChannelInterptor());
@@ -153,6 +129,46 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
         outputChannel = channel;
     }
 
+    /**
+     * <功能描述>:
+     * 发布消息，默认信息不持久化
+     *
+     * @param topic   发布的主题
+     * @param payload 发布的消息
+     * @param qos     发布的消息质量
+     * @return boolean
+     * @author LoadHao
+     * @date 2019/6/18 16:57
+     **/
+    public boolean publishMessage(String topic, String payload, int qos) {
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setTopic(topic);
+        mqttMessage.setPayload(payload);
+        mqttMessage.setQos(qos);
+        mqttMessage.setRetained(false);
+        return publishMessage(mqttMessage);
+    }
+
+    /**
+     * <功能描述>:
+     * 发布消息
+     *
+     * @param topic    发布的主题
+     * @param payload  发布的消息
+     * @param qos      发布的消息质量
+     * @param retained 是否持久化
+     * @return boolean
+     * @author LoadHao
+     * @date 2019/6/18 16:57
+     **/
+    public boolean publishMessage(String topic, String payload, int qos, boolean retained) {
+        MqttMessage mqttMessage = new MqttMessage();
+        mqttMessage.setTopic(topic);
+        mqttMessage.setPayload(payload);
+        mqttMessage.setQos(qos);
+        mqttMessage.setRetained(retained);
+        return publishMessage(mqttMessage);
+    }
 
     /**
      * <功能描述>:
@@ -161,7 +177,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
      * @param mqttMessage 消息内容
      * @author LoadHao
      **/
-    public static boolean publishMessage(MqttMessage mqttMessage) {
+    public boolean publishMessage(MqttMessage mqttMessage) {
         //消息头
         MessageHeaders messageHeaders = mqttHeaders(mqttMessage);
         //消息体
@@ -180,7 +196,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
      * @return boolean 发布状态
      * @author LoadHao
      **/
-    public static boolean publishMessage(MqttMessage mqttMessage, long timeout) {
+    public boolean publishMessage(MqttMessage mqttMessage, long timeout) {
         //消息头
         MessageHeaders messageHeaders = mqttHeaders(mqttMessage);
         //消息体

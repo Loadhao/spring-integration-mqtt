@@ -10,7 +10,7 @@
  * 作者姓名           修改时间           版本号              描述
  */
 
-package cn.zhhcloud.client.message.mqtt2.channel.interceptor;
+package cn.zhhcloud.client.message.mqtt2.channel;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;

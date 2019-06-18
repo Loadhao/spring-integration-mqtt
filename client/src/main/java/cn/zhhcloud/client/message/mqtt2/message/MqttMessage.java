@@ -10,13 +10,13 @@
  * 作者姓名           修改时间           版本号              描述
  */
 
-package cn.zhhcloud.client.message.mqtt2;
+package cn.zhhcloud.client.message.mqtt2.message;
 
 import lombok.Data;
 
 /**
  * 功能描述: <br>
- * 〈〉
+ * 〈MqttMessage〉
  *
  * @author LoadHao
  * @date 2019/6/13
