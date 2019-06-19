@@ -37,6 +37,4 @@ public class MqttConnOptions {
     private String[] url;
     private String keepAliveInterval;
     private String completionTimeout;
-    private String defaultTopic;
-    private String defaultQos;
 }

@@ -12,15 +12,12 @@
 
 package cn.zhhcloud.client.message.mqtt2.adapter;
 
+import cn.zhhcloud.client.message.mqtt2.bean.IntegrationFlowBeanUtils;
 import cn.zhhcloud.client.message.mqtt2.message.MqttMessage;
-import cn.zhhcloud.client.message.mqtt2.channel.MqttChannelInterptor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlowAdapter;
-import org.springframework.integration.dsl.IntegrationFlowDefinition;
-import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.*;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.MqttHeaders;
@@ -45,9 +42,9 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
     private String clientId;
     private MqttPahoMessageHandler messageHandler;
     private static MessageChannel outputChannel;
-    private boolean async = true;
+    private boolean async;
     private boolean defaultRetained;
-    private int defaultQos = 1;
+    private int defaultQos;
 
     protected AbstractMqttPublisherAdapter() {
     }
@@ -60,36 +57,34 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
      **/
     @Override
     protected IntegrationFlowDefinition<?> buildFlow() {
-        IntegrationFlow integrationFlow = mqttOutboundFlow();
-        return from(getOutputChannel()).gateway(integrationFlow);
-    }
-
-    /**
-     * <功能描述>:
-     * IntegrationFlow
-     *
-     * @author LoadHao
-     **/
-    private IntegrationFlow mqttOutboundFlow() {
-        return IntegrationFlows.from(getOutputChannel())
-                .handle(getMessageHandler())
-                .get();
-    }
-
-    public MqttPahoClientFactory getMqttPahoClientFactory() {
-        return mqttPahoClientFactory;
+        return IntegrationFlows.from(getOutputChannel()).handle(getMessageHandler());
     }
 
     public static void setMqttPahoClientFactory(MqttPahoClientFactory clientFactory) {
         mqttPahoClientFactory = clientFactory;
     }
 
-    public String getClientId() {
-        return clientId;
+    /**
+     * <功能描述>:
+     * 设置客户端id（唯一）
+     *
+     * @param clientId 客户端id
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setClientId(String clientId) {
+        this.clientId = clientId;
+        return this;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    /**
+     * <功能描述>:
+     * bean注入
+     *
+     * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttPublisherAdapter
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter postBean() {
+        return (AbstractMqttPublisherAdapter) IntegrationFlowBeanUtils.postBeforeInitialization(this);
     }
 
     /**
@@ -98,7 +93,7 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
      *
      * @author LoadHao
      **/
-    private MqttPahoMessageHandler getMessageHandler() {
+    public MqttPahoMessageHandler getMessageHandler() {
         if (messageHandler == null) {
             MqttPahoMessageHandler defaultMessageHandler = new MqttPahoMessageHandler
                     (clientId, mqttPahoClientFactory);
@@ -112,21 +107,92 @@ public abstract class AbstractMqttPublisherAdapter extends IntegrationFlowAdapte
         return this.messageHandler;
     }
 
-    public void setMessageHandler(MqttPahoMessageHandler messageHandler) {
+    /**
+     * <功能描述>:
+     * 设置发布消息的处理程序
+     *
+     * @param messageHandler 布消息的处理程序
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setMessageHandler(MqttPahoMessageHandler messageHandler) {
         this.messageHandler = messageHandler;
+        return this;
     }
 
-    private MessageChannel getOutputChannel() {
+    public MessageChannel getOutputChannel() {
         if (outputChannel == null) {
-            DirectChannel defaultChannel = new DirectChannel();
-            defaultChannel.addInterceptor(new MqttChannelInterptor());
-            outputChannel = defaultChannel;
+            outputChannel = new DirectChannel();
         }
         return outputChannel;
     }
 
-    public void setOutputChannel(MessageChannel channel) {
+    /**
+     * <功能描述>:
+     * 设置发布消息通道
+     *
+     * @param channel 发布消息的通道
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setOutputChannel(MessageChannel channel) {
         outputChannel = channel;
+        return this;
+    }
+
+    public static MqttPahoClientFactory getMqttPahoClientFactory() {
+        return mqttPahoClientFactory;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    /**
+     * <功能描述>:
+     * 设置消息发布是否异步
+     *
+     * @param async 是否异步
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setAsync(boolean async) {
+        this.async = async;
+        return this;
+    }
+
+    public boolean isDefaultRetained() {
+        return defaultRetained;
+    }
+
+    /**
+     * <功能描述>:
+     * 设置发布的消息是否持久化
+     *
+     * @param defaultRetained 是否持久化
+     * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttPublisherAdapter
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setDefaultRetained(boolean defaultRetained) {
+        this.defaultRetained = defaultRetained;
+        return this;
+    }
+
+    public int getDefaultQos() {
+        return defaultQos;
+    }
+
+    /**
+     * <功能描述>:
+     * 设置发布的消息默认的qos
+     *
+     * @param defaultQos 默认的qos
+     * @author LoadHao
+     **/
+    protected AbstractMqttPublisherAdapter setDefaultQos(int defaultQos) {
+        this.defaultQos = defaultQos;
+        return this;
     }
 
     /**

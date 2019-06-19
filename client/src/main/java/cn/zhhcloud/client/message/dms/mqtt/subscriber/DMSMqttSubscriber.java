@@ -12,9 +12,12 @@
 
 package cn.zhhcloud.client.message.dms.mqtt.subscriber;
 
-import cn.zhhcloud.client.message.dms.mqtt.recv.ClientMessageHandler;
-import cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter;
-import cn.zhhcloud.client.message.mqtt2.bean.IntegrationFlowBeanUtils;
+import cn.zhhcloud.client.message.dms.mqtt.interptor.DMSMqttSubChannelInterptor;
+import cn.zhhcloud.client.message.dms.mqtt.receiver.Client1Recv;
+import cn.zhhcloud.client.message.dms.mqtt.receiver.Client2Recv;
+import cn.zhhcloud.client.message.mqtt2.subscriber.MqttSubscriber;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.messaging.MessageChannel;
 
 /**
  * 功能描述: <br>
@@ -23,37 +26,46 @@ import cn.zhhcloud.client.message.mqtt2.bean.IntegrationFlowBeanUtils;
  * @author LoadHao
  * @date 2019/6/18
  */
-public class DMSMqttSubscriber extends AbstractMqttSubscriberAdapter {
-    public static DMSMqttSubscriber CLIENT_1;
-    public static DMSMqttSubscriber CLIENT_2;
+public class DMSMqttSubscriber extends MqttSubscriber {
+    public static MqttSubscriber CLIENT_1;
+    public static MqttSubscriber CLIENT_2;
+
+    public static void init() {
+        CLIENT_1 = client1();
+        CLIENT_2 = client2();
+    }
 
     /**
-     * <功能描述>:
-     * 初始化DMS相关的订阅通道
-     *
-     * @author LoadHao
-     * @date 2019/6/18 15:52
-     **/
-    public static void init() {
-        CLIENT_1 = (DMSMqttSubscriber) IntegrationFlowBeanUtils.postBeforeInitialization(test1());
-        CLIENT_2 = (DMSMqttSubscriber) IntegrationFlowBeanUtils.postBeforeInitialization(test2());
+     * 订阅者一
+     */
+    private static MqttSubscriber client1() {
+        return new MqttSubscriber()
+                .setClientId("clientId1")
+                .setTopic("a")
+                .setMessageHandler(new Client1Recv())
+                .setChannel(inputChannel())
+                .postBean();
     }
 
-    private static DMSMqttSubscriber test1() {
-        DMSMqttSubscriber test1 = new DMSMqttSubscriber();
-        test1.setClientId("clientId1")
+    /**
+     * 订阅者二
+     */
+    private static MqttSubscriber client2() {
+        return new MqttSubscriber()
+                .setClientId("clientId2")
                 .setTopic("a")
-                .setMessageHandler(new ClientMessageHandler());
-
-        return test1;
+                .setMessageHandler(new Client2Recv())
+                .setChannel(inputChannel())
+                .postBean();
     }
 
-    private static DMSMqttSubscriber test2() {
-        DMSMqttSubscriber test2 = new DMSMqttSubscriber();
-        test2.setClientId("clientId2")
-                .setTopic("a")
-                .setMessageHandler(new ClientMessageHandler());
-
-        return test2;
+    /**
+     * 订阅消息通道设置
+     */
+    private static MessageChannel inputChannel() {
+        DirectChannel directChannel = new DirectChannel();
+        //消息拦截
+        directChannel.addInterceptor(new DMSMqttSubChannelInterptor());
+        return directChannel;
     }
 }

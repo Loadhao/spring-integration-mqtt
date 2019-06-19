@@ -12,7 +12,7 @@
 
 package cn.zhhcloud.client.message.mqtt2.adapter;
 
-import cn.zhhcloud.client.message.mqtt2.channel.MqttChannelInterptor;
+import cn.zhhcloud.client.message.mqtt2.bean.IntegrationFlowBeanUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -64,12 +64,25 @@ public abstract class AbstractMqttSubscriberAdapter extends IntegrationFlowAdapt
 
     private MessageChannel getChannel() {
         if (channel == null) {
-            DirectChannel directChannel = new DirectChannel();
-            //消息拦截
-            directChannel.addInterceptor(new MqttChannelInterptor());
-            channel = directChannel;
+            channel = new DirectChannel();
         }
         return channel;
+    }
+
+    protected AbstractMqttSubscriberAdapter setChannel(MessageChannel channel) {
+        this.channel = channel;
+        return this;
+    }
+
+    /**
+     * <功能描述>:
+     * bean注入
+     *
+     * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter
+     * @author LoadHao
+     **/
+    protected AbstractMqttSubscriberAdapter postBean() {
+        return (AbstractMqttSubscriberAdapter) IntegrationFlowBeanUtils.postBeforeInitialization(this);
     }
 
     /**
@@ -80,7 +93,7 @@ public abstract class AbstractMqttSubscriberAdapter extends IntegrationFlowAdapt
      * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter
      * @author LoadHao
      **/
-    public AbstractMqttSubscriberAdapter setMessageHandler(MessageHandler messageHandler) {
+    protected AbstractMqttSubscriberAdapter setMessageHandler(MessageHandler messageHandler) {
         this.messageHandler = messageHandler;
         return this;
     }
@@ -93,7 +106,7 @@ public abstract class AbstractMqttSubscriberAdapter extends IntegrationFlowAdapt
      * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter
      * @author LoadHao
      **/
-    public AbstractMqttSubscriberAdapter setClientId(String clientId) {
+    protected AbstractMqttSubscriberAdapter setClientId(String clientId) {
         this.clientId = clientId;
         return this;
     }
@@ -106,7 +119,7 @@ public abstract class AbstractMqttSubscriberAdapter extends IntegrationFlowAdapt
      * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter
      * @author LoadHao
      **/
-    public AbstractMqttSubscriberAdapter setTopic(String topic) {
+    protected AbstractMqttSubscriberAdapter setTopic(String topic) {
         this.topic = topic;
         return this;
     }
@@ -119,9 +132,17 @@ public abstract class AbstractMqttSubscriberAdapter extends IntegrationFlowAdapt
      * @return cn.zhhcloud.client.message.mqtt2.adapter.AbstractMqttSubscriberAdapter
      * @author LoadHao
      **/
-    public AbstractMqttSubscriberAdapter setQos(int qos) {
+    private AbstractMqttSubscriberAdapter setQos(int qos) {
         this.qos = qos;
         return this;
+    }
+
+    private MqttPahoMessageDrivenChannelAdapter getDrivenChannelAdapter() {
+        return drivenChannelAdapter;
+    }
+
+    private void setDrivenChannelAdapter(MqttPahoMessageDrivenChannelAdapter drivenChannelAdapter) {
+        this.drivenChannelAdapter = drivenChannelAdapter;
     }
 
     /**

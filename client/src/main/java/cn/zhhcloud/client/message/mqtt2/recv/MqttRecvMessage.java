@@ -1,27 +1,27 @@
 /**
  * All rights Reserved, Designed By www.iwhalecloud.com
  * Copyright (c): 2019 www.iwhalecloud.com
- * FileName: DMSPublisherConstant
+ * FileName: RecvMessage
  * Author:   LoadHao
- * Date:     2019/6/18 17:55
+ * Date:     2019/6/19 14:11
  * Description:
  * History:
  * <author>          <time>          <version>          <desc>
  * 作者姓名           修改时间           版本号              描述
  */
 
-package cn.zhhcloud.client.message.dms.mqtt.constant;
+package cn.zhhcloud.client.message.mqtt2.recv;
 
 /**
  * 功能描述: <br>
- * 〈DMS 发布者常量类〉
+ * 〈Mqtt 接收到的消息参数详情接口〉
  *
  * @author LoadHao
- * @date 2019/6/18
+ * @date 2019/6/19
  */
-public final class DMSPublisherConstant {
-    /**
-     * 发布者ClientId
-     */
-    public static final String SERVICE_ID = "iot_serviceId";
+public interface MqttRecvMessage {
+
+    String getPayload();
+
+    String getTopic();
 }

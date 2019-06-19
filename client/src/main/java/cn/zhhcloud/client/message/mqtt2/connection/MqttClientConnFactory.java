@@ -45,7 +45,7 @@ public class MqttClientConnFactory {
         //连接超时
         mqttConnectOptions.setConnectionTimeout(Integer.valueOf(mqttConnOptions.getCompletionTimeout()));
         mqttConnectOptions.setCleanSession(true);
-        mqttConnectOptions.setMaxInflight(10000);
+        mqttConnectOptions.setMaxInflight(100000);
         return mqttConnectOptions;
     }
 
